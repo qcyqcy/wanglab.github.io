@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文学检索系统 - 搜索</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 基础样式 */
+        body {
+            font-family: 'Noto Serif SC', 'Songti SC', serif;
+        }
+        
+        /* 自定义滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #5D5CDE;
+        }
+
+        /* 暗黑模式样式 */
+        .dark {
+            color-scheme: dark;
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: #333;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #666;
+        }
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: #7878e8;
+        }
+
+        /* 高亮文本样式 */
+        .highlight {
+            background-color: #fff3b4;
+            font-weight: bold;
+            padding: 0 1px;
+            border-radius: 2px;
+        }
+        .dark .highlight {
+            background-color: #665a00;
+            color: #FFF;
+        }
+        
+        /* 结果卡片样式 */
+        .result-card.expanded .collapse-content {
+            max-height: none;
+            overflow: visible;
+        }
+        .collapse-content {
+            max-height: 300px;
+            overflow: hidden;
+            position: relative;
+        }
+        .fade-out {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(rgba(255, 255, 255, 0), rgba(255, 255, 255, 1));
+        }
+        .dark .fade-out {
+            background: linear-gradient(rgba(30, 30, 30, 0), rgba(30, 30, 30, 1));
+        }
+        
+        .result-card:not(.expanded) .read-less {
+            display: none;
+        }
+        .result-card.expanded .read-more {
+            display: none;
+        }
+        .result-card.expanded .fade-out {
+            display: none;
+        }
+        
+        /* 诗文样式 */
+        .poem-content {
+            white-space: pre-wrap;
+            line-height: 1.7;
+            text-align: justify;
+        }
+        
+        .poem-content p {
+            margin-bottom: 1em;
+        }
+        
+        /* 自动换行处理 */
+        .poem-block {
+            display: block;
+            margin: 0.75em 0;
+            padding-left: 1em;
+            position: relative;
+            line-height: 1.8;
+        }
+        
+        .poem-block::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.4em;
+            bottom: 0.4em;
+            width: 3px;
+            background-color: #e0e0e0;
+            border-radius: 3px;
+        }
+        
+        .dark .poem-block::before {
+            background-color: #4b4b4b;
+        }
+        
+        /* 加载动画 */
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #5D5CDE;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 诗人标签样式 */
+        .poet-tag {
+            background-color: rgba(93, 92, 222, 0.1);
+            color: #5D5CDE;
+            padding: 0.2em 0.6em;
+            border-radius: 4px;
+            font-size: 0.8em;
+            display: inline-flex;
+            align-items: center;
+            margin-right: 0.5em;
+            margin-bottom: 0.5em;
+        }
+        
+        .dark .poet-tag {
+            background-color: rgba(120, 120, 232, 0.2);
+            color: #9e9dff;
+        }
+        
+        /* 添加新的样式用于右上角退出按钮 */
+        .logout-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 8px 15px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .logout-button:hover {
+            background-color: #d32f2f;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-200">
+    <div class="container mx-auto px-4 py-8 max-w-5xl">
+        <header class="text-center mb-8 relative">
+            <h1 class="text-4xl md:text-5xl font-bold text-5D5CDE dark:text-indigo-400 mb-3">文学检索系统</h1>
+            <p class="text-gray-600 dark:text-gray-400 text-lg">探索诗人和文集资料</p>
+            <button id="logout-btn" class="logout-button">退出登录</button>
+        </header>
+
+        <div id="searchContainer" class="mb-10">
+            <div class="relative max-w-2xl mx-auto mb-6">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder="输入诗人姓名或作品内容片段..." 
+                    class="w-full px-5 py-4 border rounded-lg text-lg shadow-sm focus:ring-2 focus:ring-5D5CDE dark:focus:ring-indigo-500 focus:border-5D5CDE dark:focus:border-indigo-500 outline-none transition bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700"
+                    disabled
+                >
+                <button id="searchButton" class="absolute right-3 top-1/2 transform -translate-y-1/2 bg-5D5CDE hover:bg-indigo-600 text-white px-6 py-2 rounded-md transition shadow-sm" disabled>
+                    搜索
+                </button>
+            </div>
+            
+            <div class="flex flex-wrap items-center justify-center gap-3 mb-6">
+                <div class="bg-white dark:bg-gray-800 rounded-full shadow-sm px-1 py-1 flex border border-gray-200 dark:border-gray-700">
+                    <button id="filterAll" class="py-1.5 px-4 rounded-full bg-5D5CDE text-white font-medium">全部</button>
+                    <button id="filterPoet" class="py-1.5 px-4 rounded-full text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition">诗人</button>
+                    <button id="filterWork" class="py-1.5 px-4 rounded-full text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition">文集/诗话</button>
+                </div>
+                
+                <div id="dataStatus" class="text-sm text-gray-500 dark:text-gray-400 px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full shadow-inner">
+                    正在加载数据...
+                </div>
+            </div>
+        </div>
+
+        <div id="searchStats" class="max-w-5xl mx-auto mb-6 flex items-center justify-between py-2 px-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hidden">
+            <div>
+                找到 <span id="resultCount" class="font-bold text-5D5CDE dark:text-indigo-400">0</span> 条结果
+            </div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">
+                提示：点击结果卡片可展开查看完整内容
+            </div>
+        </div>
+
+        <div id="resultsContainer" class="space-y-5">
+            <!-- 初始提示信息 -->
+            <div id="initialMessage" class="text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mx-auto mb-6 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                <h3 class="text-xl font-semibold mb-2">正在加载数据...</h3>
+                <p class="text-gray-600 dark:text-gray-400">请稍候，系统正在自动加载文献数据</p>
+            </div>
+            
+            <!-- 加载中提示 -->
+            <div id="loadingResults" class="hidden text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                <div class="loading-spinner mx-auto mb-4"></div>
+                <p class="text-gray-600 dark:text-gray-400">正在搜索匹配结果...</p>
+            </div>
+            
+            <!-- 无结果提示 -->
+            <div id="noResults" class="hidden text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mx-auto mb-6 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 class="text-xl font-semibold mb-2">未找到匹配结果</h3>
+                <p class="text-gray-600 dark:text-gray-400">请尝试使用不同的关键词或更宽泛的搜索条件</p>
+            </div>
+            
+            <!-- 错误提示 -->
+            <div id="errorMessage" class="hidden text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-red-200 dark:border-red-700">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mx-auto mb-6 text-red-300 dark:text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <h3 class="text-xl font-semibold mb-2 text-red-600 dark:text-red-400">数据加载失败</h3>
+                <p class="text-gray-600 dark:text-gray-400" id="errorDetails">无法加载数据，请稍后重试。</p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="mt-16 py-6 border-t border-gray-200 dark:border-gray-800 text-center text-sm text-gray-600 dark:text-gray-400">
+        <p>© 2023 文学检索系统 | 基于传统文献的智能检索</p>
+        <p class="mt-2">支持明/暗色主题自动切换 | 推荐使用现代浏览器访问</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
