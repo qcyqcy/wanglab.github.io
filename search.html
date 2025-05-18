@@ -5,19 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>高麗和朝鮮時期的李白接受資料匯纂查詢系統</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#5D5CDE',
-                        'primary-dark': '#4849c7'
-                    }
-                }
-            },
-            darkMode: 'class'
-        }
-    </script>
     <link rel="stylesheet" href="style.css">
     <style>
         /* 基础样式 */
@@ -168,16 +155,16 @@
             color: #9e9dff;
         }
         
-        /* 添加新的样式用于退出按钮 */
+        /* 添加新的样式用于右上角退出按钮 */
         .logout-button {
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            position: absolute;
+            top: 15px;
+            right: 15px;
             padding: 8px 15px;
             background-color: #f44336;
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
             transition: background-color 0.3s;
@@ -190,56 +177,38 @@
         .hidden {
             display: none;
         }
-        
-        /* 添加过渡效果 */
-        #resultsContainer, #searchStats, #initialMessage, #loadingResults, #noResults, #errorMessage {
-            transition: opacity 0.3s ease;
-        }
     </style>
 </head>
 <body class="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 transition-colors duration-200">
     <div class="container mx-auto px-4 py-8 max-w-5xl">
         <header class="text-center mb-8 relative">
-            <div class="absolute right-0 top-0">
-                <button id="logout-btn" class="logout-button">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
-                    退出登录
-                </button>
-            </div>
-            <h1 class="text-4xl md:text-5xl font-bold text-primary dark:text-indigo-400 mb-3">高麗和朝鮮時期的李白接受資料匯纂查詢系統</h1>
+            <h1 class="text-4xl md:text-5xl font-bold text-5D5CDE dark:text-indigo-400 mb-3">高麗和朝鮮時期的李白接受資料匯纂查詢系統</h1>
             <p class="text-gray-600 dark:text-gray-400 text-lg">探索诗人和文集资料</p>
+            <button id="logout-btn" class="logout-button">退出登录</button>
         </header>
 
         <div id="searchContainer" class="mb-10">
-            <div class="relative max-w-2xl mx-auto mb-6 group">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-primary dark:group-focus-within:text-indigo-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+            <div class="relative max-w-2xl mx-auto mb-6">
                 <input 
                     type="text" 
                     id="searchInput" 
                     placeholder="输入诗人姓名或作品内容片段..." 
-                    class="w-full pl-12 pr-16 py-4 border rounded-lg text-lg shadow-sm focus:ring-2 focus:ring-primary dark:focus:ring-indigo-500 focus:border-primary dark:focus:border-indigo-500 outline-none transition bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700"
+                    class="w-full px-5 py-4 border rounded-lg text-lg shadow-sm focus:ring-2 focus:ring-5D5CDE dark:focus:ring-indigo-500 focus:border-5D5CDE dark:focus:border-indigo-500 outline-none transition bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700"
                     disabled
                 >
-                <button id="searchButton" class="absolute right-3 top-1/2 transform -translate-y-1/2 bg-primary hover:bg-primary-dark text-white px-4 py-1.5 rounded-md transition shadow-sm flex items-center" disabled>
-                    <span>搜索</span>
+                <button id="searchButton" class="absolute right-3 top-1/2 transform -translate-y-1/2 bg-5D5CDE hover:bg-indigo-600 text-white px-2 py-1 rounded-md transition shadow-sm hidden" disabled>
+                    搜索
                 </button>
             </div>
             
-            <div class="flex flex-wrap items-center justify-center gap-4 mb-6">
+            <div class="flex flex-wrap items-center justify-center gap-3 mb-6">
                 <div class="bg-white dark:bg-gray-800 rounded-full shadow-sm px-1 py-1 flex border border-gray-200 dark:border-gray-700">
-                    <button id="filterAll" class="py-1.5 px-4 rounded-full bg-primary text-white font-medium transition duration-200">全部</button>
-                    <button id="filterPoet" class="py-1.5 px-4 rounded-full text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200">诗人</button>
-                    <button id="filterWork" class="py-1.5 px-4 rounded-full text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200">文集/诗话</button>
+                    <button id="filterAll" class="py-1.5 px-4 rounded-full bg-5D5CDE text-white font-medium">全部</button>
+                    <button id="filterPoet" class="py-1.5 px-4 rounded-full text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition">诗人</button>
+                    <button id="filterWork" class="py-1.5 px-4 rounded-full text-gray-600 dark:text-gray-300 font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition">文集/诗话</button>
                 </div>
                 
-                <div id="dataStatus" class="text-sm text-gray-500 dark:text-gray-400 px-4 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-full shadow-inner flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
+                <div id="dataStatus" class="text-sm text-gray-500 dark:text-gray-400 px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full shadow-inner">
                     正在加载数据...
                 </div>
             </div>
@@ -247,7 +216,7 @@
 
         <div id="searchStats" class="max-w-5xl mx-auto mb-6 flex items-center justify-between py-2 px-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hidden">
             <div>
-                找到 <span id="resultCount" class="font-bold text-primary dark:text-indigo-400">0</span> 条结果
+                找到 <span id="resultCount" class="font-bold text-5D5CDE dark:text-indigo-400">0</span> 条结果
             </div>
             <div class="text-sm text-gray-500 dark:text-gray-400">
                 提示：点击结果卡片可展开查看完整内容
