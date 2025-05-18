@@ -82,11 +82,7 @@ async function loadData() {
         if (dataStatus) {
             const poetEntryCount = poetryData.filter(item => item.type === 'poet_entry').length;
             const workEntryCount = poetryData.filter(item => item.type === 'work_entry').length;
-            dataStatus.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-                已加载 ${poetryData.length} 条数据（${poetEntryCount} 位诗人，${workEntryCount} 部文集）`;
+            dataStatus.textContent = `已加载 ${poetryData.length} 条数据（${poetEntryCount} 位诗人，${workEntryCount} 部文集）`;
         }
         
         // 隐藏初始提示和错误信息
@@ -112,11 +108,7 @@ async function loadData() {
         
         if (errorMessage) errorMessage.classList.remove('hidden');
         if (errorDetails) errorDetails.textContent = `加载数据失败: ${error.message}`;
-        if (dataStatus) dataStatus.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
-            数据加载失败`;
+        if (dataStatus) dataStatus.textContent = "数据加载失败";
         
         const initialMessage = document.getElementById('initialMessage');
         if (initialMessage) initialMessage.classList.add('hidden');
@@ -171,25 +163,18 @@ let currentSearchResults = [];
 function setFilter(filter) {
     currentFilter = filter;
     
-    // 更新按钮样式，添加过渡效果
+    // 更新按钮样式
     const filterAll = document.getElementById('filterAll');
     const filterPoet = document.getElementById('filterPoet');
     const filterWork = document.getElementById('filterWork');
     
-    if (filterAll) filterAll.className = `py-1.5 px-4 rounded-full font-medium transition-all duration-200 ${filter === 'all' ? 'bg-primary text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`;
-    if (filterPoet) filterPoet.className = `py-1.5 px-4 rounded-full font-medium transition-all duration-200 ${filter === 'poet_entry' ? 'bg-primary text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`;
-    if (filterWork) filterWork.className = `py-1.5 px-4 rounded-full font-medium transition-all duration-200 ${filter === 'work_entry' ? 'bg-primary text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`;
+    if (filterAll) filterAll.className = `py-1.5 px-4 rounded-full font-medium ${filter === 'all' ? 'bg-5D5CDE text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition'}`;
+    if (filterPoet) filterPoet.className = `py-1.5 px-4 rounded-full font-medium ${filter === 'poet_entry' ? 'bg-5D5CDE text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition'}`;
+    if (filterWork) filterWork.className = `py-1.5 px-4 rounded-full font-medium ${filter === 'work_entry' ? 'bg-5D5CDE text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition'}`;
     
-    // 重新应用搜索，添加淡入效果
+    // 重新应用搜索
     if (currentSearchResults.length > 0) {
-        const resultsContainer = document.getElementById('resultsContainer');
-        if (resultsContainer) {
-            resultsContainer.style.opacity = '0.6';
-            setTimeout(() => {
-                displaySearchResults(currentSearchResults);
-                resultsContainer.style.opacity = '1';
-            }, 300);
-        }
+        displaySearchResults(currentSearchResults);
     }
 }
 
@@ -211,19 +196,13 @@ function performSearch() {
     const resultsContainer = document.getElementById('resultsContainer');
     const searchStats = document.getElementById('searchStats');
     
-    // 显示加载状态并添加过渡效果
+    // 显示加载状态
     if (initialMessage) initialMessage.classList.add('hidden');
     if (errorMessage) errorMessage.classList.add('hidden');
-    if (loadingResults) {
-        loadingResults.classList.remove('hidden');
-        loadingResults.style.opacity = '0';
-        setTimeout(() => loadingResults.style.opacity = '1', 50);
-    }
+    if (loadingResults) loadingResults.classList.remove('hidden');
     if (noResults) noResults.classList.add('hidden');
     
     if (resultsContainer) {
-        // 淡出现有结果
-        resultsContainer.style.opacity = '0.5';
         const existingCards = resultsContainer.querySelectorAll('.result-card');
         existingCards.forEach(card => card.remove());
     }
@@ -233,27 +212,14 @@ function performSearch() {
         // 如果查询为空，显示所有条目（最多50个）
         const results = query ? searchData(query) : poetryData.slice(0, 50);
         currentSearchResults = results;
+        displaySearchResults(results);
         
         // 更新状态
         if (loadingResults) loadingResults.classList.add('hidden');
-        if (searchStats) {
-            searchStats.classList.remove('hidden');
-            searchStats.style.opacity = '0';
-            setTimeout(() => searchStats.style.opacity = '1', 50);
-        }
-        
-        // 显示结果
-        displaySearchResults(results);
-        
-        if (resultsContainer) {
-            // 淡入新结果
-            resultsContainer.style.opacity = '1';
-        }
+        if (searchStats) searchStats.classList.remove('hidden');
         
         if (results.length === 0 && noResults) {
             noResults.classList.remove('hidden');
-            noResults.style.opacity = '0';
-            setTimeout(() => noResults.style.opacity = '1', 50);
         }
     }, 300);
 }
@@ -334,7 +300,7 @@ function createResultCard(item) {
     const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
     
     const cardDiv = document.createElement('div');
-    cardDiv.className = 'result-card bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 cursor-pointer';
+    cardDiv.className = 'result-card bg-white dark:bg-gray-800 rounded-lg shadow-sm p-5 border border-gray-200 dark:border-gray-700 hover:shadow-md transition';
     
     // 头部：姓名/标题
     const header = document.createElement('div');
@@ -346,29 +312,15 @@ function createResultCard(item) {
     } else { // work_entry
         title.innerHTML = highlightText(`《${item.work_title || '无题'}》`, query);
     }
-    title.className = 'text-xl font-bold text-primary dark:text-indigo-400';
+    title.className = 'text-xl font-bold text-5D5CDE dark:text-indigo-400';
     
     const typeTag = document.createElement('span');
     if (item.type === 'poet_entry') {
         typeTag.textContent = '诗人';
-        typeTag.className = 'px-2.5 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-medium rounded-full flex items-center';
-        
-        // 添加图标
-        const icon = document.createElement('span');
-        icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-        </svg>`;
-        typeTag.prepend(icon);
+        typeTag.className = 'px-2.5 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs font-medium rounded-full';
     } else { // work_entry
         typeTag.textContent = '文集/诗话';
-        typeTag.className = 'px-2.5 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-xs font-medium rounded-full flex items-center';
-        
-        // 添加图标
-        const icon = document.createElement('span');
-        icon.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-        </svg>`;
-        typeTag.prepend(icon);
+        typeTag.className = 'px-2.5 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-xs font-medium rounded-full';
     }
     
     header.appendChild(title);
@@ -420,29 +372,19 @@ function createResultCard(item) {
     
     // 展开/收起按钮
     const buttonContainer = document.createElement('div');
-    buttonContainer.className = 'flex justify-center mt-4';
+    buttonContainer.className = 'flex justify-center mt-3';
     
     const expandBtn = document.createElement('button');
-    expandBtn.className = 'read-more px-5 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-indigo-500 flex items-center';
-    expandBtn.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-        </svg>
-        展开全文
-    `;
+    expandBtn.className = 'read-more px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition text-sm font-medium focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-500';
+    expandBtn.textContent = '展开全文';
     expandBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         cardDiv.classList.add('expanded');
     });
     
     const collapseBtn = document.createElement('button');
-    collapseBtn.className = 'read-less px-5 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-indigo-500 flex items-center';
-    collapseBtn.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-        </svg>
-        收起
-    `;
+    collapseBtn.className = 'read-less px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition text-sm font-medium focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-500';
+    collapseBtn.textContent = '收起';
     collapseBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         cardDiv.classList.remove('expanded');
